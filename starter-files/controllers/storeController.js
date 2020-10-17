@@ -14,7 +14,7 @@ const multerOptions = {
     } else {
       next({ message: "That filetype isn't alowed!" }, false);
     }
-  },
+  }
 };
 
 exports.homePage = (req, res) => {
@@ -63,11 +63,23 @@ exports.editStore = async (req, res) => {
 };
 
 exports.updateStore = async (req, res) => {
-  // req.body.location.type = "Point";
+  req.body.location.type = "Point";
   const store = await Store.findOneAndUpdate({ _id: req.params.id }, req.body, {
     new: true,
-    runValidators: true,
+    runValidators: true
   }).exec();
   req.flash("success", `Successfully updated ${store.name}`);
   res.redirect(`/stores/${store._id}/edit`);
+};
+
+exports.getStoreBySlug = async (req, res, next) => {
+  const store = await Store.findOne({ slug: req.params.slug });
+  if (!store) return next();
+  res.render("store", { store, title: store.name });
+};
+
+exports.getStoresByTag = async (req, res) => {
+  const tags = await Store.getTagsList();
+  const tag = req.params.tag;
+  res.render("tags", { tags: tags, title: "Tags", tag });
 };
